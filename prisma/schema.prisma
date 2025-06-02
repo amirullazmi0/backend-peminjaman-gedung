@@ -23,6 +23,7 @@ model User {
   role          Role           @default(USER)
   accessToken   String?
   refreshToken  String?
+  isActive      Boolean
   lastActive    DateTime?
   password      String?
   createdAt     DateTime       @default(now())
