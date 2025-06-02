@@ -24,7 +24,7 @@ import { TokenCleanupService } from 'src/auth/token-cleanup.service';
       global: true,
       secret: 'mysecret-rent-building-2025',
       signOptions: {
-        expiresIn: '24h',
+        expiresIn: '7d',
       },
     }),
     ScheduleModule.forRoot(),
