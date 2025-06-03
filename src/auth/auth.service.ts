@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { authLoginRequestDto, authLoginResponse } from './AuthDTO';
+import { authForgetPasswordDto, authForgetPasswordResponseDto, authLoginRequestDto, authLoginResponse } from './AuthDTO';
 import { WebResponse } from 'src/DTO/globalsResponse';
-import { authLoginFailed, authLoginSuccess, emailPassworWrong, userNotActive } from 'src/DTO/messages';
+import { authLoginFailed, authLoginSuccess, emailPassworWrong, urlNewPasswordSuccess, userNotActive } from 'src/DTO/messages';
 import { User } from 'generated/prisma';
 import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
@@ -26,33 +26,29 @@ export class AuthService {
       return { success: false, message: userNotActive };
     }
 
-    // Generate access token (1 jam)
     const accessToken = this.jwtService.sign(
       { email: user.email, role: user.role },
       { expiresIn: '1h' }
     );
 
-    // Generate refresh token (7 hari)
     const refreshToken = this.jwtService.sign(
       { email: user.email, role: user.role },
       { expiresIn: '7d' }
     );
 
-    // Simpan refresh token ke database
     await this.prismaService.user.update({
       where: { email: user.email },
       data: { refreshToken: refreshToken },
     });
 
-    // Kirim token sebagai httpOnly cookie
     res.cookie('access-token', accessToken, {
       httpOnly: true,
-      maxAge: 60 * 60 * 1000, // 1 jam
+
     });
 
     res.cookie('refresh-token', refreshToken, {
       httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
+
     });
 
     return {
@@ -68,7 +64,6 @@ export class AuthService {
   }
 
   async refreshToken(req: Request, res: Response) {
-    // Ambil refresh token dari cookie
     const refreshToken = req.cookies['refresh-token'];
 
     if (!refreshToken) {
@@ -76,10 +71,8 @@ export class AuthService {
     }
 
     try {
-      // Verifikasi refresh token
       const payload = this.jwtService.verify(refreshToken);
 
-      // Cari user dan cek apakah refresh token valid dan sama dengan yang ada di DB
       const user = await this.prismaService.user.findUnique({
         where: { email: payload.email },
       });
@@ -88,13 +81,11 @@ export class AuthService {
         throw new UnauthorizedException('Refresh token tidak valid');
       }
 
-      // Generate access token baru (1 jam)
       const newAccessToken = this.jwtService.sign(
         { email: user.email, role: user.role },
         { expiresIn: '1h' }
       );
 
-      // Set cookie access token baru
       res.cookie('access-token', newAccessToken, {
         httpOnly: true,
         maxAge: 60 * 60 * 1000,
@@ -106,6 +97,16 @@ export class AuthService {
       };
     } catch (error) {
       throw new UnauthorizedException('Refresh token tidak valid atau expired');
+    }
+  }
+
+  async forgetPassword(req: authForgetPasswordDto): Promise<WebResponse<authForgetPasswordResponseDto>> {
+    const user = await this.findUserByEmail(req.email);
+    if (!user) throw new BadRequestException('Email tidak ditemukan');
+
+    return {
+      success: true,
+      message: urlNewPasswordSuccess
     }
   }
 
