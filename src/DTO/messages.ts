@@ -11,6 +11,7 @@ export const deleteDataFailed = 'delete data failed';
 export const registerSuccess = 'register successfully';
 export const registerFailed = 'register failed';
 export const emailIsUnique = 'email already in use';
+export const phoneIsUnique = 'phone number already in use';
 export const authLoginSuccess = 'login successfully'
 export const authLoginFailed = 'login failed'
 export const accountNotRegister = 'account not register'
