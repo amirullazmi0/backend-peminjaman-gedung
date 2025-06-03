@@ -184,7 +184,6 @@ export class AuthService {
 
 
   async findUserByEmail(email: string): Promise<User> {
-
     const user = await this.prismaService.user.findUnique({
       where: {
         email: email
@@ -199,7 +198,6 @@ export class AuthService {
   }
 
   async findUserById(id: string): Promise<{ user: User }> {
-
     const user = await this.prismaService.user.findUnique({
       where: {
         id: id
@@ -218,15 +216,11 @@ export class AuthService {
   }
 
   async findUserByPhone(phone: string): Promise<{ user: User }> {
-
     const user = await this.prismaService.user.findUnique({
       where: {
         phone: phone
       }
     })
-
-    console.log('user_________________________', user);
-
 
     if (user) {
       return {
