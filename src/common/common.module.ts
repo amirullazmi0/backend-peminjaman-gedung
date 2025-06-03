@@ -24,9 +24,6 @@ import { TokenCleanupService } from 'src/auth/token-cleanup.service';
     JwtModule.register({
       global: true,
       secret: 'mysecret-rent-building-2025',
-      signOptions: {
-        expiresIn: '7d',
-      },
     }),
     ScheduleModule.forRoot(),
     HttpModule,
@@ -36,6 +33,6 @@ import { TokenCleanupService } from 'src/auth/token-cleanup.service';
 })
 export class CommonModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthUserMidlleware).forRoutes('/api*', '/auth');
+    consumer.apply(AuthUserMidlleware).forRoutes('/api*');
   }
 }
