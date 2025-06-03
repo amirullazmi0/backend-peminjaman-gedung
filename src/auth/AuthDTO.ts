@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty } from "class-validator";
+import { IsEmail, isNotEmpty, IsNotEmpty, IsString } from "class-validator";
+import { Role } from "generated/prisma";
 
 export class authLoginRequestDto {
   @IsEmail()
@@ -13,6 +14,25 @@ export class authForgetPasswordDto {
   email: string;
 }
 
+export class authRegisterRequestDto {
+  @IsNotEmpty()
+  name: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  phone: string;
+
+  @IsNotEmpty()
+  role: Role;
+
+  @IsNotEmpty()
+  password: string;
+}
+
+
 export class authLoginResponse {
   id: string
   email: string;
@@ -22,4 +42,9 @@ export class authLoginResponse {
 
 export class authForgetPasswordResponseDto {
   url: string
+}
+
+export class authRegisterResponse {
+  name: string
+  email: string
 }
