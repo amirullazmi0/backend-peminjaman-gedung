@@ -19,6 +19,7 @@ import { TokenCleanupService } from 'src/auth/token-cleanup.service';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env'
     }),
     JwtModule.register({
       global: true,
