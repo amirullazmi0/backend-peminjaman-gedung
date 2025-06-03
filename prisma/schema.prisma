@@ -16,16 +16,16 @@ datasource db {
 
 model User {
   id            String         @id @default(uuid())
-  name          String?
-  email         String?        @unique
+  name          String
+  email         String         @unique
   emailVerified DateTime?
-  phone         String?
+  phone         String         @unique
   role          Role           @default(USER)
   accessToken   String?
   refreshToken  String?
-  isActive      Boolean
+  isActive      Boolean?       @default(false)
   lastActive    DateTime?
-  password      String?
+  password      String
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   userPhoto     UserPhoto[]
@@ -49,14 +49,14 @@ model UserPhoto {
 model UserAddress {
   id        String   @id @default(uuid())
   userId    String
-  jalan     String
-  rt        String
-  rw        String
-  kelurahan String
-  kecamatan String
-  kabupaten String
-  provinsi  String
-  kodepos   String
+  jalan     String?
+  rt        String?
+  rw        String?
+  kelurahan String?
+  kecamatan String?
+  kabupaten String?
+  provinsi  String?
+  kodepos   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
