@@ -29,3 +29,4 @@ export const urlNewPasswordSuccess = 'url new password send succesfully'
 export const userNotFound = "user not found"
 export const tokenExpired = "token has expired"
 export const invalidToken = "invalid token"
+export const updateNewPasswordSuccess = "update new password successfully"
