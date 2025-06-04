@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
-import { authActivationRequest, authActivationTokenRequest, authLoginRequestDto, authRegisterRequestDto } from './AuthDTO';
+import { authActivationRequest, authActivationTokenRequest, authForgetPasswordDto, authLoginRequestDto, authNewPasswordRequestDto, authRegisterRequestDto } from './AuthDTO';
 
 @Controller('auth')
 export class AuthController {
@@ -32,8 +32,17 @@ export class AuthController {
   }
 
   @Post('forget-password')
-  async ForgetPassword() {
+  async ForgetPassword(
+    @Body() body: authForgetPasswordDto
+  ) {
+    return this.authService.forgetPassword(body)
+  }
 
+  @Post('new-password')
+  async NewPassword(
+    @Body() body: authNewPasswordRequestDto
+  ) {
+    return this.authService.newPassword(body)
   }
 
   @Post('activation-token-request')
