@@ -46,12 +46,10 @@ export class AuthService {
 
     res.cookie('access-token', accessToken, {
       httpOnly: true,
-
     });
 
     res.cookie('refresh-token', refreshToken, {
       httpOnly: true,
-
     });
 
     return {
