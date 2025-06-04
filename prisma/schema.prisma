@@ -160,7 +160,7 @@ model invoice {
 
 enum Role {
   USER
-  OWNER
+  ADMIN
   SUPERADMIN
 }
 
