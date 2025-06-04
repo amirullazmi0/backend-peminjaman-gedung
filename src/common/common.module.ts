@@ -4,7 +4,7 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { JwtModule } from '@nestjs/jwt';
 import { HttpModule } from '@nestjs/axios';
-import { AuthUserMidlleware } from './auth.middleware';
+import { AuthMiddleware } from './auth.middleware'
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TokenCleanupService } from 'src/auth/token-cleanup.service';
@@ -33,6 +33,6 @@ import { TokenCleanupService } from 'src/auth/token-cleanup.service';
 })
 export class CommonModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthUserMidlleware).forRoutes('/api*');
+    consumer.apply(AuthMiddleware).forRoutes('/api*');
   }
 }
