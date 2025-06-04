@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
-import { authLoginRequestDto, authRegisterRequestDto } from './AuthDTO';
+import { authActivationRequest, authActivationTokenRequest, authLoginRequestDto, authRegisterRequestDto } from './AuthDTO';
 
 @Controller('auth')
 export class AuthController {
@@ -34,5 +34,19 @@ export class AuthController {
   @Post('forget-password')
   async ForgetPassword() {
 
+  }
+
+  @Post('activation-token-request')
+  async ActivationTokenRequest(
+    @Body() body: authActivationTokenRequest
+  ) {
+    return this.authService.activationTokenRequest(body)
+  }
+
+  @Post('activation')
+  async Activation(
+    @Body() body: authActivationRequest
+  ) {
+    return this.authService.activationUser(body)
   }
 }
