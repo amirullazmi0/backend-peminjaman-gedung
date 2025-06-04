@@ -32,6 +32,16 @@ export class authRegisterRequestDto {
   password: string;
 }
 
+export class authActivationTokenRequest {
+  @IsEmail()
+  email: string;
+}
+
+export class authActivationRequest {
+  @IsNotEmpty()
+  token: string;
+}
+
 
 export class authLoginResponse {
   id: string
@@ -47,4 +57,18 @@ export class authForgetPasswordResponseDto {
 export class authRegisterResponse {
   name: string
   email: string
+}
+
+export class tokenVerify {
+  email: string
+  role: Role
+  type: string
+  iat: number
+  exp: number
+}
+
+export class authActivationUserResponse {
+  email: string
+  name: string
+  active: boolean
 }
