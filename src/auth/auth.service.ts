@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { authForgetPasswordDto, authForgetPasswordResponseDto, authLoginRequestDto, authLoginResponse, authRegisterRequestDto, authRegisterResponse } from './AuthDTO';
+import { authActivationRequest, authActivationTokenRequest, authActivationUserResponse, authForgetPasswordDto, authForgetPasswordResponseDto, authLoginRequestDto, authLoginResponse, authRegisterRequestDto, authRegisterResponse, tokenVerify } from './AuthDTO';
 import { WebResponse } from 'src/DTO/globalsResponse';
-import { authLoginFailed, authLoginSuccess, emailIsUnique, emailPassworWrong, phoneIsUnique, registerSuccess, urlNewPasswordSuccess, userNotActive } from 'src/DTO/messages';
+import { authLoginFailed, authLoginSuccess, emailIsUnique, emailPassworWrong, invalidToken, phoneIsUnique, registerSuccess, tokenExpired, urlNewPasswordSuccess, userActivated, userNotActive, userNotFound } from 'src/DTO/messages';
 import { User } from 'generated/prisma';
 import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
@@ -131,8 +131,91 @@ export class AuthService {
     }
   }
 
-  async activatedUser() {
+  async activationTokenRequest(body: authActivationTokenRequest): Promise<WebResponse<any>> {
 
+    const user = await this.findUserByEmail(body.email)
+
+    if (!user) {
+      throw new BadRequestException(userNotFound)
+    }
+    const activationToken = await this.jwtService.sign(
+      {
+        email: user.email,
+        role: user.role,
+        type: 'activation'
+      },
+      { expiresIn: '1h' }
+    );
+
+    const ORIGIN_FE = process.env.ORIGIN_FE
+    const oneHourSoon = new Date(Date.now() + 60 * 60 * 1000);
+
+    await this.sendEmailService.sendEmail({
+      subject: 'Aktivasi Akun',
+      type: 'account-activation',
+      to: user.email,
+      context: {
+        name: user.name,
+        email: user.email,
+        url: `${ORIGIN_FE}/auth/${activationToken}/activation-user`,
+        date: formatIndonesianDate(oneHourSoon)
+      }
+    })
+
+    return {
+      message: 'activation request sent successfully',
+      success: true,
+    }
+  }
+
+  async activationUser(body: authActivationRequest): Promise<WebResponse<authActivationUserResponse>> {
+    try {
+      const token = body.token
+
+      const data: tokenVerify = await this.jwtService.verify(token)
+
+      let user = await this.findUserByEmail(data.email)
+
+      user = await this.prismaService.user.update({
+        where: {
+          email: user.email
+        },
+        data: {
+          isActive: true,
+          emailVerified: new Date
+        }
+      })
+
+      return {
+        message: userActivated,
+        success: true,
+        data: {
+          active: user.isActive,
+          email: user.email,
+          name: user.name
+        }
+      }
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        return {
+          message: tokenExpired,
+          success: false,
+          data: null,
+        };
+      } else if (error.name === 'JsonWebTokenError') {
+        return {
+          message: invalidToken,
+          success: false,
+          data: null,
+        };
+      } else {
+        return {
+          message: 'An error occurred during token verification',
+          success: false,
+          data: null,
+        };
+      }
+    }
   }
 
   async refreshToken(req: Request, res: Response) {
