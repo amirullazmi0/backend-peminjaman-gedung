@@ -14,6 +14,14 @@ export class authForgetPasswordDto {
   email: string;
 }
 
+export class authNewPasswordRequestDto {
+  @IsNotEmpty()
+  token: string;
+
+  @IsNotEmpty()
+  password: string;
+}
+
 export class authRegisterRequestDto {
   @IsNotEmpty()
   name: string;
