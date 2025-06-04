@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { authActivationRequest, authActivationTokenRequest, authActivationUserResponse, authForgetPasswordDto, authForgetPasswordResponseDto, authLoginRequestDto, authLoginResponse, authRegisterRequestDto, authRegisterResponse, tokenVerify } from './AuthDTO';
+import { authActivationRequest, authActivationTokenRequest, authActivationUserResponse, authForgetPasswordDto, authForgetPasswordResponseDto, authLoginRequestDto, authLoginResponse, authNewPasswordRequestDto, authRegisterRequestDto, authRegisterResponse, tokenVerify } from './AuthDTO';
 import { WebResponse } from 'src/DTO/globalsResponse';
-import { authLoginFailed, authLoginSuccess, emailIsUnique, emailPassworWrong, invalidToken, phoneIsUnique, registerSuccess, tokenExpired, urlNewPasswordSuccess, userActivated, userNotActive, userNotFound } from 'src/DTO/messages';
+import { authLoginFailed, authLoginSuccess, emailIsUnique, emailPassworWrong, invalidToken, phoneIsUnique, registerSuccess, tokenExpired, updateNewPasswordSuccess, urlNewPasswordSuccess, userActivated, userNotActive, userNotFound } from 'src/DTO/messages';
 import { User } from 'generated/prisma';
 import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
@@ -255,13 +255,82 @@ export class AuthService {
     }
   }
 
-  async forgetPassword(req: authForgetPasswordDto): Promise<WebResponse<authForgetPasswordResponseDto>> {
-    const user = await this.findUserByEmail(req.email);
+  async forgetPassword(body: authForgetPasswordDto): Promise<WebResponse<authForgetPasswordResponseDto>> {
+    const user = await this.findUserByEmail(body.email);
     if (!user) throw new BadRequestException('Email tidak ditemukan');
+    const ORIGIN_FE = process.env.ORIGIN_FE
+    const oneHourSoon = new Date(Date.now() + 60 * 60 * 1000);
+
+    const forgetPasswordToken = await this.jwtService.sign(
+      {
+        email: user.email,
+        role: user.role,
+        type: 'forget-password'
+      },
+      { expiresIn: '1h' }
+    );
+
+    await this.sendEmailService.sendEmail({
+      subject: 'Reset Password Akun',
+      type: 'forget-password',
+      to: user.email,
+      context: {
+        name: user.name,
+        email: user.email,
+        url: `${ORIGIN_FE}/auth/forget-password/${forgetPasswordToken}/new-password`,
+        date: formatIndonesianDate(oneHourSoon)
+      }
+    })
 
     return {
       success: true,
       message: urlNewPasswordSuccess
+    }
+  }
+
+  async newPassword(body: authNewPasswordRequestDto): Promise<WebResponse<any>> {
+    try {
+      const token = body.token
+
+      const data: tokenVerify = await this.jwtService.verify(token)
+
+      let user = await this.findUserByEmail(data.email)
+
+      const bcryptPassword = await bcrypt.hash(body.password, 10);
+
+      user = await this.prismaService.user.update({
+        where: {
+          email: user.email
+        },
+        data: {
+          password: bcryptPassword
+        }
+      })
+
+      return {
+        message: updateNewPasswordSuccess,
+        success: true,
+      }
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        return {
+          message: tokenExpired,
+          success: false,
+          data: null,
+        };
+      } else if (error.name === 'JsonWebTokenError') {
+        return {
+          message: invalidToken,
+          success: false,
+          data: null,
+        };
+      } else {
+        return {
+          message: 'An error occurred during token verification',
+          success: false,
+          data: null,
+        };
+      }
     }
   }
 
