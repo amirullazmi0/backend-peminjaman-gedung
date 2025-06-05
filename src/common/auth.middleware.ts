@@ -1,17 +1,24 @@
-import { Injectable, NestMiddleware, HttpException, HttpStatus } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NestMiddleware,
+  // UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { tokenVerify } from 'src/auth/AuthDTO';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   constructor(
     private prismaService: PrismaService,
-    private jwtService: JwtService,
+    private jwtService: JwtService
   ) { }
 
   async use(req: any, res: any, next: (error?: any) => void) {
     const [type, token] = req.headers.authorization?.split(' ') ?? [];
+
     if (type === 'Bearer' && token) {
       try {
         const decoded: tokenVerify = this.jwtService.verify(token);
@@ -32,6 +39,7 @@ export class AuthMiddleware implements NestMiddleware {
         throw new HttpException('Invalid token or expired', HttpStatus.UNAUTHORIZED);
       }
     }
+
     next();
   }
 }
