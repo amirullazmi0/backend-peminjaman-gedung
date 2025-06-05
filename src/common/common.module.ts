@@ -31,8 +31,22 @@ import { TokenCleanupService } from 'src/auth/token-cleanup.service';
   providers: [PrismaService, TokenCleanupService],
   exports: [PrismaService, TokenCleanupService],
 })
+
 export class CommonModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes('/api*');
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes('api/*');
   }
 }
+
+// export class CommonModule implements NestModule {
+//   configure(consumer: MiddlewareConsumer) {
+//     consumer
+//       .apply(AuthMiddleware)
+//       .forRoutes(
+//         { path: 'api/building', method: RequestMethod.GET },
+//         { path: 'api/user/*', method: RequestMethod.POST },
+//       );
+//   }
+// }
