@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Building, User } from 'generated/prisma';
 import { WebResponse } from 'src/DTO/globalsResponse';
-import { getDataSuccess } from 'src/DTO/messages';
+import { dataNotFound, deleteDataSuccess, getDataSuccess, updateDataSuccess } from 'src/DTO/messages';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AddItemBuildingRequestDto } from './buildingDto';
+import { AddItemBuildingRequestDto, deleteBuildingRequestDto, updateBuildingPhotoRequestDto, updateBuildingRequestDto } from './buildingDto';
 
 @Injectable()
 export class BuildingService {
@@ -16,7 +16,8 @@ export class BuildingService {
     if (id) {
       building = await this.prismaService.building.findMany({
         where: {
-          id: id
+          id: id,
+          deletedAt: null
         },
         include: {
           buildingPhoto: true,
@@ -26,6 +27,9 @@ export class BuildingService {
       })
     } else {
       building = await this.prismaService.building.findMany({
+        where: {
+          deletedAt: null
+        },
         include: {
           buildingPhoto: true,
           buildingAddress: true,
@@ -51,6 +55,15 @@ export class BuildingService {
       },
     });
 
+    body.photo.url && body.photo.url.map(async (ss) => {
+      await this.prismaService.buildingPhoto.create({
+        data: {
+          url: ss,
+          buildingId: building.id
+        }
+      })
+    })
+
     await this.prismaService.buildingAddress.create({
       data: {
         buildingId: building.id,
@@ -65,7 +78,6 @@ export class BuildingService {
         rt: body.address.rt,
         rw: body.address.rw,
       }
-
     })
 
     if (body.supportDocumentRequirement && body.supportDocumentRequirement.length > 0) {
@@ -84,5 +96,108 @@ export class BuildingService {
       message: getDataSuccess,
       data: building
     }
+  }
+
+  async delete(user: User, body: deleteBuildingRequestDto): Promise<WebResponse<Building>> {
+    const building = await this.prismaService.building.findUnique({
+      where: {
+        id: body.id,
+        deletedAt: null
+      }
+    })
+
+    if (building) {
+      await this.prismaService.building.update({
+        where: {
+          id: body.id,
+        },
+        data: {
+          deletedAt: new Date,
+          deletedBy: user.id
+        }
+      })
+      return {
+        success: true,
+        message: deleteDataSuccess,
+      }
+    } else {
+      return {
+        success: false,
+        message: dataNotFound,
+      }
+    }
+  }
+
+  async updateBuilding(user: User, body: updateBuildingRequestDto): Promise<WebResponse<Building>> {
+
+    const building = await this.prismaService.building.findUnique({
+      where: {
+        id: body.id,
+        deletedAt: null
+      }
+    })
+
+    if (building) {
+      await this.prismaService.building.update({
+        where: {
+          id: body.id,
+        },
+        data: {
+          name: body.name,
+          price: body.price,
+          description: body.description,
+          updatedBy: user.id
+        }
+      })
+      return {
+        success: true,
+        message: updateDataSuccess,
+      }
+    } else {
+      return {
+        success: false,
+        message: dataNotFound,
+      }
+    }
+
+  }
+
+  async updateBuildingPhoto(user: User, body: updateBuildingPhotoRequestDto): Promise<WebResponse<Building>> {
+    const building = await this.prismaService.building.findUnique({
+      where: {
+        id: body.id,
+        deletedAt: null
+      }
+    })
+
+    if (building) {
+      body.url && body.url.map(async (ss) => {
+        await this.prismaService.buildingPhoto.create({
+          data: {
+            url: ss,
+            buildingId: body.id,
+            updatedBy: user.id
+          }
+        })
+      })
+      return {
+        success: true,
+        message: updateDataSuccess,
+      }
+    } else {
+      return {
+        success: false,
+        message: dataNotFound,
+      }
+    }
+
+  }
+
+  async updateBuildingAddress() {
+
+  }
+
+  async updateSupportDocumentRequirement() {
+
   }
 }
