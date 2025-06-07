@@ -109,10 +109,50 @@ export class updateBuildingRequestDto {
 export class updateBuildingPhotoRequestDto {
   @IsNotEmpty()
   @IsString()
-  id: string;
+  buildingId: string;
 
   @IsArray()
   @IsString({ each: true })
   url: string[];
+}
+
+export class updateBuildingAddressRequestDto {
+  @IsNotEmpty()
+  @IsString()
+  id: string;
+
+  @IsNotEmpty()
+  @IsString()
+  buildingId: string;
+
+  @IsString()
+  jalan: string;
+
+  @IsString()
+  rt: string;
+
+  @IsString()
+  rw: string;
+
+  @IsString()
+  kelurahan: string;
+
+  @IsString()
+  kecamatan: string;
+
+  @IsString()
+  kota: string;
+
+  @IsString()
+  provinsi: string;
+
+  @IsString()
+  kodepos: string;
+
+  @IsLatitude()
+  lat: string;
+
+  @IsLongitude()
+  lng: string;
 }
 
