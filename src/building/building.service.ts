@@ -3,7 +3,7 @@ import { Building, User } from 'generated/prisma';
 import { WebResponse } from 'src/DTO/globalsResponse';
 import { dataNotFound, deleteDataSuccess, getDataSuccess, updateDataSuccess } from 'src/DTO/messages';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AddItemBuildingRequestDto, deleteBuildingRequestDto, updateBuildingPhotoRequestDto, updateBuildingRequestDto } from './buildingDto';
+import { AddItemBuildingRequestDto, deleteBuildingRequestDto, updateBuildingAddressRequestDto, updateBuildingPhotoRequestDto, updateBuildingRequestDto } from './buildingDto';
 
 @Injectable()
 export class BuildingService {
@@ -165,20 +165,95 @@ export class BuildingService {
   async updateBuildingPhoto(user: User, body: updateBuildingPhotoRequestDto): Promise<WebResponse<Building>> {
     const building = await this.prismaService.building.findUnique({
       where: {
+        id: body.buildingId,
+        deletedAt: null
+      }
+    });
+
+    if (!building) {
+      return {
+        success: false,
+        message: dataNotFound,
+      };
+    }
+
+    const existingPhotos = await this.prismaService.buildingPhoto.findMany({
+      where: {
+        buildingId: body.buildingId,
+        deletedAt: null
+      }
+    });
+
+    const existingUrls = existingPhotos.map(p => p.url);
+    const newUrls = body.url;
+
+    const toDelete = existingPhotos.filter(photo => !newUrls.includes(photo.url));
+    const deleteOps = toDelete.map(photo =>
+      this.prismaService.buildingPhoto.update({
+        where: { id: photo.id },
+        data: {
+          deletedAt: new Date(),
+          deletedBy: user.id,
+        }
+      })
+    );
+
+    const toCreate = newUrls.filter(url => !existingUrls.includes(url));
+    const createOps = toCreate.map(url =>
+      this.prismaService.buildingPhoto.create({
+        data: {
+          url,
+          buildingId: building.id
+        }
+      })
+    );
+
+    await Promise.all([...deleteOps, ...createOps]);
+
+    return {
+      success: true,
+      message: updateDataSuccess,
+    };
+  }
+
+
+  async updateBuildingAddress(user: User, body: updateBuildingAddressRequestDto): Promise<WebResponse<Building>> {
+    const building = await this.prismaService.building.findUnique({
+      where: {
+        id: body.buildingId,
+        deletedAt: null
+      },
+      include: {
+        buildingAddress: true
+      }
+    })
+
+    const address = await this.prismaService.buildingAddress.findUnique({
+      where: {
         id: body.id,
         deletedAt: null
       }
     })
 
     if (building) {
-      body.url && body.url.map(async (ss) => {
-        await this.prismaService.buildingPhoto.create({
-          data: {
-            url: ss,
-            buildingId: body.id,
-            updatedBy: user.id
-          }
-        })
+      await this.prismaService.buildingAddress.update({
+        where: {
+          id: address.id,
+          buildingId: body.buildingId,
+        },
+        data: {
+          lat: body.lat ?? address.lat,
+          lng: body.lng ?? address.lng,
+          jalan: body.jalan ?? address.jalan,
+          kelurahan: body.kelurahan ?? address.kelurahan,
+          kecamatan: body.kecamatan ?? address.kecamatan,
+          kota: body.kota ?? address.kota,
+          provinsi: body.provinsi ?? address.provinsi,
+          kodepos: body.kodepos ?? address.kodepos,
+          rt: body.rt ?? address.rt,
+          rw: body.rw ?? address.rw,
+          updatedBy: user.id
+        }
       })
       return {
         success: true,
@@ -190,11 +265,6 @@ export class BuildingService {
         message: dataNotFound,
       }
     }
-
-  }
-
-  async updateBuildingAddress() {
-
   }
 
   async updateSupportDocumentRequirement() {
