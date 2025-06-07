@@ -3,7 +3,7 @@ import { Building, User } from 'generated/prisma';
 import { WebResponse } from 'src/DTO/globalsResponse';
 import { dataNotFound, deleteDataSuccess, getDataSuccess, updateDataSuccess } from 'src/DTO/messages';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AddItemBuildingRequestDto, deleteBuildingRequestDto, updateBuildingAddressRequestDto, updateBuildingPhotoRequestDto, updateBuildingRequestDto } from './buildingDto';
+import { AddItemBuildingRequestDto, deleteBuildingRequestDto, updateBuildingAddressRequestDto, updateBuildingPhotoRequestDto, updateBuildingRequestDto, updateSupportDocumentRequirement } from './buildingDto';
 
 @Injectable()
 export class BuildingService {
@@ -266,7 +266,53 @@ export class BuildingService {
     }
   }
 
-  async updateSupportDocumentRequirement() {
+  async updateSupportDocumentRequirement(
+    user: User,
+    body: updateSupportDocumentRequirement
+  ): Promise<WebResponse<Building>> {
+    const building = await this.prismaService.building.findUnique({
+      where: {
+        id: body.buildingId,
+        deletedAt: null
+      }
+    });
 
+    if (!building) {
+      return {
+        success: false,
+        message: dataNotFound,
+      };
+    }
+    const isDuplicate = await this.prismaService.supportDocumentRequirement.findFirst({
+      where: {
+        buildingId: body.buildingId,
+        name: body.name,
+        id: { not: body.id },
+        deletedAt: null
+      }
+    });
+
+    if (isDuplicate) {
+      return {
+        success: false,
+        message: `Nama dokumen "${body.name}" sudah digunakan di gedung ini.`,
+      };
+    }
+
+    await this.prismaService.supportDocumentRequirement.update({
+      where: {
+        id: body.id,
+      },
+      data: {
+        name: body.name,
+        templateDocumentUrl: body.templateDocumentUrl,
+        updatedBy: user.id
+      }
+    });
+    return {
+      success: true,
+      message: updateDataSuccess,
+    };
   }
+
 }
