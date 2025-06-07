@@ -56,7 +56,6 @@ model UserPhoto {
 }
 
 model UserAddress {
-  id        String    @id @default(uuid())
   userId    String
   jalan     String?
   rt        String?
@@ -74,6 +73,7 @@ model UserAddress {
   deletedAt DateTime?
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId])
   @@map("user_addresses")
 }
 
@@ -146,7 +146,6 @@ model BuildingPhoto {
 }
 
 model BuildingAddress {
-  id         String    @id @default(uuid())
   buildingId String
   jalan      String
   rt         String
@@ -166,6 +165,7 @@ model BuildingAddress {
   deletedAt  DateTime?
   building   Building  @relation(fields: [buildingId], references: [id], onDelete: Cascade)
 
+  @@unique([buildingId])
   @@map("building_addresses")
 }
 
