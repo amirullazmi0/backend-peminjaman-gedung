@@ -15,7 +15,7 @@ export class BuildingController {
     return this.buildingService.getAll(id);
   }
 
-  @Post('/add')
+  @Post()
   @Auth(['ADMIN', 'SUPERADMIN'])
   @UseGuards(RolesGuard)
   async create(
