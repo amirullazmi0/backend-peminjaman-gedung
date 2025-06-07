@@ -121,10 +121,6 @@ export class updateBuildingAddressRequestDto {
   @IsString()
   id: string;
 
-  @IsNotEmpty()
-  @IsString()
-  buildingId: string;
-
   @IsString()
   jalan: string;
 
@@ -154,5 +150,23 @@ export class updateBuildingAddressRequestDto {
 
   @IsLongitude()
   lng: string;
+}
+
+export class updateSupportDocumentRequirement {
+  @IsNotEmpty()
+  @IsString()
+  id: string;
+
+  @IsNotEmpty()
+  @IsString()
+  buildingId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsOptional()
+  @IsUrl()
+  templateDocumentUrl?: string;
 }
 
