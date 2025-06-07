@@ -100,8 +100,8 @@ model Building {
 
 model SupportDocumentRequirement {
   id                          String                       @id @default(uuid())
-  name                        String
   buildingId                  String
+  name                        String
   templateDocumentUrl         String?
   building                    Building                     @relation(fields: [buildingId], references: [id], onDelete: Cascade)
   createdAt                   DateTime                     @default(now())
