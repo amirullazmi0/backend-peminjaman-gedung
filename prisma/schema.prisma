@@ -26,6 +26,10 @@ model User {
   isActive      Boolean?       @default(false)
   lastActive    DateTime?
   password      String
+  createdBy     String?
+  updatedBy     String?
+  deletedBy     String?
+  deletedAt     DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   userPhoto     UserPhoto[]
@@ -37,18 +41,22 @@ model User {
 }
 
 model UserPhoto {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
   url       String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  deletedAt DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_photos")
 }
 
 model UserAddress {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
   jalan     String?
   rt        String?
@@ -58,9 +66,13 @@ model UserAddress {
   kabupaten String?
   provinsi  String?
   kodepos   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  deletedAt DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_addresses")
 }
@@ -73,6 +85,10 @@ model Building {
   description                String?
   createdAt                  DateTime                     @default(now())
   updatedAt                  DateTime                     @updatedAt
+  createdBy                  String?
+  updatedBy                  String?
+  deletedBy                  String?
+  deletedAt                  DateTime?
   user                       User                         @relation(fields: [userId], references: [id])
   buildingPhoto              BuildingPhoto[]
   buildingAddress            BuildingAddress[]
@@ -90,6 +106,10 @@ model SupportDocumentRequirement {
   building                    Building                     @relation(fields: [buildingId], references: [id], onDelete: Cascade)
   createdAt                   DateTime                     @default(now())
   updatedAt                   DateTime                     @updatedAt
+  createdBy                   String?
+  updatedBy                   String?
+  deletedBy                   String?
+  deletedAt                   DateTime?
   supportDocumentRentBuilding SupportDocumentRentBuilding?
 
   @@map("support_documents_requirements")
@@ -101,24 +121,32 @@ model SupportDocumentRentBuilding {
   supportDocumentRequirementId String                     @unique
   createdAt                    DateTime                   @default(now())
   updatedAt                    DateTime                   @updatedAt
+  createdBy                    String?
+  updatedBy                    String?
+  deletedBy                    String?
+  deletedAt                    DateTime?
   supportDocumentRequirement   SupportDocumentRequirement @relation(fields: [supportDocumentRequirementId], references: [id], onDelete: Cascade)
 
   @@map("support_documents_rent_buildings")
 }
 
 model BuildingPhoto {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   buildingId String
   url        String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  deletedBy  String?
+  deletedAt  DateTime?
+  building   Building  @relation(fields: [buildingId], references: [id], onDelete: Cascade)
 
   @@map("building_photos")
 }
 
 model BuildingAddress {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   buildingId String
   jalan      String
   rt         String
@@ -130,9 +158,13 @@ model BuildingAddress {
   kodepos    String
   lat        String
   lng        String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  deletedBy  String?
+  deletedAt  DateTime?
+  building   Building  @relation(fields: [buildingId], references: [id], onDelete: Cascade)
 
   @@map("building_addresses")
 }
@@ -146,6 +178,10 @@ model RentBuilding {
   status     RentStatus
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  deletedBy  String?
+  deletedAt  DateTime?
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   building   Building   @relation(fields: [buildingId], references: [id], onDelete: Cascade)
   invoice    invoice[]
@@ -159,6 +195,10 @@ model invoice {
   url       String
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  deletedAt DateTime?
   rent      RentBuilding @relation(fields: [rentId], references: [id], onDelete: Cascade)
 }
 
