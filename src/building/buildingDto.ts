@@ -84,3 +84,35 @@ export class AddItemBuildingRequestDto {
   @Type(() => SupportDocumentRequirementDto)
   supportDocumentRequirement: SupportDocumentRequirementDto[];
 }
+
+export class deleteBuildingRequestDto {
+  @IsNotEmpty()
+  @IsString()
+  id: string;
+}
+
+export class updateBuildingRequestDto {
+  @IsNotEmpty()
+  @IsString()
+  id: string;
+
+  @IsString()
+  name: string;
+
+  @IsNumber()
+  price: number;
+
+  @IsString()
+  description: string;
+}
+
+export class updateBuildingPhotoRequestDto {
+  @IsNotEmpty()
+  @IsString()
+  id: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  url: string[];
+}
+
