@@ -179,7 +179,7 @@ export class BuildingService {
 
     const existingPhotos = await this.prismaService.buildingPhoto.findMany({
       where: {
-        buildingId: body.buildingId,
+        buildingId: building.id,
         deletedAt: null
       }
     });
@@ -220,7 +220,7 @@ export class BuildingService {
   async updateBuildingAddress(user: User, body: updateBuildingAddressRequestDto): Promise<WebResponse<Building>> {
     const building = await this.prismaService.building.findUnique({
       where: {
-        id: body.buildingId,
+        id: body.id,
         deletedAt: null
       },
       include: {
@@ -230,7 +230,7 @@ export class BuildingService {
 
     const address = await this.prismaService.buildingAddress.findUnique({
       where: {
-        id: body.id,
+        buildingId: building.id,
         deletedAt: null
       }
     })
@@ -238,8 +238,7 @@ export class BuildingService {
     if (building) {
       await this.prismaService.buildingAddress.update({
         where: {
-          id: address.id,
-          buildingId: body.buildingId,
+          buildingId: building.id,
         },
         data: {
           lat: body.lat ?? address.lat,
