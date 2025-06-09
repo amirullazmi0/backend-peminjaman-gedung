@@ -3,8 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { authActivationRequest, authActivationTokenRequest, authActivationUserResponse, authForgetPasswordDto, authForgetPasswordResponseDto, authLoginRequestDto, authLoginResponse, authNewPasswordRequestDto, authRegisterRequestDto, authRegisterResponse, tokenVerify } from './AuthDTO';
 import { WebResponse } from 'src/DTO/globalsResponse';
-import { authLoginFailed, authLoginSuccess, emailIsUnique, emailPassworWrong, invalidToken, phoneIsUnique, registerSuccess, tokenExpired, updateNewPasswordSuccess, urlNewPasswordSuccess, userActivated, userNotActive, userNotFound } from 'src/DTO/messages';
-import { User } from 'generated/prisma';
+import { authenticated, authLoginFailed, authLoginSuccess, emailIsUnique, emailPassworWrong, invalidToken, phoneIsUnique, registerSuccess, tokenExpired, unAuthenticated, updateNewPasswordSuccess, urlNewPasswordSuccess, userActivated, userNotActive, userNotFound } from 'src/DTO/messages';
+import { Role, User } from 'generated/prisma';
 import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { SendEmailService } from 'src/send-email/send-email.service';
@@ -367,6 +367,45 @@ export class AuthService {
     } else {
       return {
         user: undefined
+      }
+    }
+  }
+
+  async checkAuth(req: Request): Promise<WebResponse<{
+    email: string,
+    role: Role
+  }>> {
+    const authorizationHeader = req.headers['authorization'];
+    if (!authorizationHeader) {
+      return {
+        success: false,
+        message: 'Authorization header missing',
+        data: null,
+      };
+    }
+    const token = authorizationHeader.split(' ')[1]
+    if (!token) {
+      return {
+        success: false,
+        message: unAuthenticated
+      }
+    }
+    const data: tokenVerify = await this.jwtService.verify(token)
+    const user = await this.findUserByEmail(data.email)
+
+    if (user) {
+      return {
+        success: true,
+        message: authenticated,
+        data: {
+          email: user.email,
+          role: user.role
+        }
+      }
+    } else {
+      return {
+        success: false,
+        message: unAuthenticated
       }
     }
   }
