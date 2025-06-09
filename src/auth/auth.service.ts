@@ -83,7 +83,7 @@ export class AuthService {
       data: {
         name: body.name,
         email: body.email,
-        phone: body.phone,
+        phone: '62' + body.phone,
         role: body.role,
         password: bcryptPassword
       }
@@ -195,23 +195,11 @@ export class AuthService {
       }
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
-        return {
-          message: tokenExpired,
-          success: false,
-          data: null,
-        };
+        throw new BadRequestException(tokenExpired)
       } else if (error.name === 'JsonWebTokenError') {
-        return {
-          message: invalidToken,
-          success: false,
-          data: null,
-        };
+        throw new BadRequestException(invalidToken)
       } else {
-        return {
-          message: 'An error occurred during token verification',
-          success: false,
-          data: null,
-        };
+        throw new BadRequestException(error.message)
       }
     }
   }
