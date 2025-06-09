@@ -58,4 +58,11 @@ export class AuthController {
   ) {
     return this.authService.activationUser(body)
   }
+
+  @Post('check-auth')
+  async CheckAuth(
+    @Req() req: Request
+  ) {
+    return this.authService.checkAuth(req)
+  }
 }
