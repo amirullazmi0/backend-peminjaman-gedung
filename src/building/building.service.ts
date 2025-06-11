@@ -55,10 +55,10 @@ export class BuildingService {
       },
     });
 
-    body.photo.url && body.photo.url.map(async (ss) => {
+    body.photo && body.photo.length > 0 && body.photo.map(async (ss) => {
       await this.prismaService.buildingPhoto.create({
         data: {
-          url: ss,
+          url: ss.url,
           buildingId: building.id
         }
       })

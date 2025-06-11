@@ -43,9 +43,8 @@ class AddressDto {
 }
 
 class PhotoDto {
-  @IsArray()
-  @IsString({ each: true })
-  url: string[];
+  @IsString()
+  url: string;
 }
 
 class SupportDocumentRequirementDto {
@@ -75,9 +74,10 @@ export class AddItemBuildingRequestDto {
   @Type(() => AddressDto)
   address: AddressDto;
 
-  @ValidateNested()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => PhotoDto)
-  photo: PhotoDto;
+  photo: PhotoDto[];
 
   @IsArray()
   @ValidateNested({ each: true })
