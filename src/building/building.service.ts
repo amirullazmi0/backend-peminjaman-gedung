@@ -4,46 +4,61 @@ import { WebResponse } from 'src/DTO/globalsResponse';
 import { dataNotFound, deleteDataSuccess, getDataSuccess, updateDataSuccess } from 'src/DTO/messages';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AddItemBuildingRequestDto, deleteBuildingRequestDto, updateBuildingAddressRequestDto, updateBuildingPhotoRequestDto, updateBuildingRequestDto, updateSupportDocumentRequirement } from './buildingDto';
+import { AttachmentService } from 'src/attachment/attachment.service';
 
 @Injectable()
 export class BuildingService {
   constructor(
-    private prismaService: PrismaService
+    private prismaService: PrismaService,
+    private attachmentService: AttachmentService
   ) { }
 
   async getAll(id?: string): Promise<WebResponse<Building | Building[]>> {
-    let building: Building | Building[]
+    let building: Building | Building[];
+
     if (id) {
-      building = await this.prismaService.building.findMany({
+      // Use findUnique when you're expecting a single result
+      building = await this.prismaService.building.findUnique({
         where: {
           id: id,
-          deletedAt: null
+          deletedAt: null, // Make sure we exclude soft-deleted buildings
         },
         include: {
           buildingPhoto: true,
           buildingAddress: true,
-          SupportDocumentRequirement: true
-        }
-      })
+          SupportDocumentRequirement: true,
+        },
+      });
+
+      // If no building is found, return a 404 response or a suitable message
+      if (!building) {
+        return {
+          success: false,
+          message: 'Building not found',
+          data: null,
+        };
+      }
     } else {
+      // When no ID is provided, return all buildings
       building = await this.prismaService.building.findMany({
         where: {
-          deletedAt: null
+          deletedAt: null, // Only active buildings (not soft-deleted)
         },
         include: {
           buildingPhoto: true,
           buildingAddress: true,
-          SupportDocumentRequirement: true
-        }
-      })
+          SupportDocumentRequirement: true,
+        },
+      });
     }
 
     return {
       success: true,
-      message: getDataSuccess,
-      data: building
-    }
+      message: getDataSuccess, // Make sure `getDataSuccess` is defined and holds a meaningful message
+      data: building,
+    };
   }
+
 
   async create(user: User, body: AddItemBuildingRequestDto): Promise<WebResponse<Building>> {
     const building = await this.prismaService.building.create({
@@ -313,6 +328,57 @@ export class BuildingService {
       success: true,
       message: updateDataSuccess,
     };
+  }
+
+
+  async saveBuildingImage({
+    user,
+    file,
+  }: {
+    user: User
+    file: Express.Multer.File;
+  }): Promise<WebResponse<{
+    url: string
+  }>> {
+    const imageSave = await this.attachmentService.saveFileImageKit({
+      file: file,
+      folder: `/${user.id}`
+    })
+
+    const url = imageSave.path;
+
+    return {
+      success: true,
+      message: 'File uploaded successfully',
+      data: {
+        url: url
+      }
+    }
+  }
+
+  async saveBuildingDocument({
+    user,
+    file,
+  }: {
+    user: User
+    file: Express.Multer.File;
+  }): Promise<WebResponse<{
+    url: string
+  }>> {
+    const imageSave = await this.attachmentService.saveDocumentImageKit({
+      file: file,
+      folder: `/${user.id}`
+    })
+
+    const url = imageSave.path;
+
+    return {
+      success: true,
+      message: 'File uploaded successfully',
+      data: {
+        url: url
+      }
+    }
   }
 
 }
