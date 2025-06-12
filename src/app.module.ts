@@ -7,7 +7,6 @@ import { RentBuildingModule } from './rent-building/rent-building.module';
 import { CommonModule } from './common/common.module';
 import { SendEmailService } from './send-email/send-email.service';
 import { SendEmailModule } from './send-email/send-email.module';
-import { AttachmentModule } from './attachment/attachment.module';
 
 @Module({
   imports: [
@@ -17,7 +16,6 @@ import { AttachmentModule } from './attachment/attachment.module';
     RentBuildingModule,
     CommonModule,
     SendEmailModule,
-    AttachmentModule
   ],
   controllers: [],
   providers: [SendEmailService],
