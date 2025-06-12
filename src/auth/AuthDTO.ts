@@ -55,6 +55,7 @@ export class authLoginResponse {
   id: string
   email: string;
   name: string;
+  role: Role;
   accessToken: string;
 }
 
