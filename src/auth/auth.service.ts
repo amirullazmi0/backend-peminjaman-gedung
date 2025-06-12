@@ -58,6 +58,7 @@ export class AuthService {
       data: {
         id: user.id,
         name: user.name,
+        role: user.role,
         email: user.email,
         accessToken: accessToken,
       }
