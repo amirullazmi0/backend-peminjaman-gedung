@@ -8,6 +8,7 @@ import { AuthMiddleware } from './auth.middleware'
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TokenCleanupService } from 'src/auth/token-cleanup.service';
+import { AttachmentService } from 'src/attachment/attachment.service';
 
 
 @Global()
@@ -28,8 +29,8 @@ import { TokenCleanupService } from 'src/auth/token-cleanup.service';
     ScheduleModule.forRoot(),
     HttpModule,
   ],
-  providers: [PrismaService, TokenCleanupService],
-  exports: [PrismaService, TokenCleanupService],
+  providers: [PrismaService, TokenCleanupService, AttachmentService],
+  exports: [PrismaService, TokenCleanupService, AttachmentService],
 })
 
 export class CommonModule implements NestModule {
