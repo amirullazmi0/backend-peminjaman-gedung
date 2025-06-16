@@ -26,7 +26,7 @@ export class BuildingService {
         include: {
           buildingPhoto: true,
           buildingAddress: true,
-          SupportDocumentRequirement: true,
+          supportDocumentRequirement: true,
         },
       });
 
@@ -47,7 +47,61 @@ export class BuildingService {
         include: {
           buildingPhoto: true,
           buildingAddress: true,
-          SupportDocumentRequirement: true,
+          supportDocumentRequirement: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    }
+
+    return {
+      success: true,
+      message: getDataSuccess, // Make sure `getDataSuccess` is defined and holds a meaningful message
+      data: building,
+    };
+  }
+
+  async getAllByUser(user: User, id?: string): Promise<WebResponse<Building | Building[]>> {
+    let building: Building | Building[];
+
+    if (id) {
+      // Use findUnique when you're expecting a single result
+      building = await this.prismaService.building.findUnique({
+        where: {
+          id: id,
+          deletedAt: null,
+          userId: user.id
+        },
+        include: {
+          buildingPhoto: true,
+          buildingAddress: true,
+          supportDocumentRequirement: true,
+        },
+      });
+
+      // If no building is found, return a 404 response or a suitable message
+      if (!building) {
+        return {
+          success: false,
+          message: 'Building not found',
+          data: null,
+        };
+      }
+    } else {
+      // When no ID is provided, return all buildings
+      building = await this.prismaService.building.findMany({
+        where: {
+          deletedAt: null,
+          userId: user.id
+        },
+        include: {
+          buildingPhoto: true,
+          buildingAddress: true,
+          supportDocumentRequirement: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
         },
       });
     }
@@ -67,6 +121,7 @@ export class BuildingService {
         name: body.name,
         price: body.price,
         description: body.description,
+        createdBy: user.id
       },
     });
 
@@ -74,7 +129,8 @@ export class BuildingService {
       await this.prismaService.buildingPhoto.create({
         data: {
           url: ss.url,
-          buildingId: building.id
+          buildingId: building.id,
+          createdBy: user.id
         }
       })
     })
@@ -92,6 +148,7 @@ export class BuildingService {
         kodepos: body.address.kodepos,
         rt: body.address.rt,
         rw: body.address.rw,
+        createdBy: user.id
       }
     })
 
@@ -100,7 +157,9 @@ export class BuildingService {
         await this.prismaService.supportDocumentRequirement.create({
           data: {
             name: ss.name,
-            buildingId: building.id
+            buildingId: building.id,
+            templateDocumentUrl: ss.templateDocumentUrl,
+            createdBy: user.id
           }
         })
       })
