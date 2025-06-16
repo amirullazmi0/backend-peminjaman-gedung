@@ -7,6 +7,7 @@ import { RentBuildingModule } from './rent-building/rent-building.module';
 import { CommonModule } from './common/common.module';
 import { SendEmailService } from './send-email/send-email.service';
 import { SendEmailModule } from './send-email/send-email.module';
+import { InvoiceModule } from './invoice/invoice.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SendEmailModule } from './send-email/send-email.module';
     RentBuildingModule,
     CommonModule,
     SendEmailModule,
+    InvoiceModule,
   ],
   controllers: [],
   providers: [SendEmailService],
