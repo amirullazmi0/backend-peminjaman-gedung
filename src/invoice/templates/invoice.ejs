@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Invoice Peminjaman Gedung</title>
+    <style>
+      body {
+        font-family: Arial;
+        margin: 40px;
+      }
+      h1 {
+        text-align: center;
+      }
+      .section {
+        margin-bottom: 20px;
+      }
+      .label {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Invoice Peminjaman Gedung</h1>
+
+    <div class="section">
+      <div>
+        <span class="label">Nama Gedung:</span> <%= invoice.buidingName %>
+      </div>
+      <div>
+        <span class="label">Alamat Gedung:</span> <%= invoice.buildingAddress %>
+      </div>
+      <div>
+        <span class="label">Harga:</span> Rp <%=
+        invoice.price.toLocaleString("id-ID") %>
+      </div>
+      <div>
+        <span class="label">Periode:</span> <%= invoice.startDate %> s/d <%=
+        invoice.endDate %>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Penyedia Gedung</h3>
+      <div>
+        <span class="label">Nama:</span> <%= invoice.buildingUserName %>
+      </div>
+      <div>
+        <span class="label">Email:</span> <%= invoice.buildingUserEmail %>
+      </div>
+      <div>
+        <span class="label">Telepon:</span> <%= invoice.buildingUserPhone %>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Penyewa Gedung</h3>
+      <div><span class="label">Nama:</span> <%= invoice.userName %></div>
+      <div><span class="label">Email:</span> <%= invoice.userEmail %></div>
+      <div><span class="label">Telepon:</span> <%= invoice.userPhone %></div>
+    </div>
+
+    <footer style="margin-top: 50px; text-align: center">
+      <p>Terima kasih atas peminjaman gedung ini.</p>
+    </footer>
+  </body>
+</html>
