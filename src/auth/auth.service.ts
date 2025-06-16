@@ -72,9 +72,9 @@ export class AuthService {
       throw new BadRequestException(emailIsUnique)
     }
 
-    const userByPhone = await this.findUserByPhone(body.phone)
+    const userByPhone = await this.findUserByPhone('62' + body.phone)
 
-    if (!userByPhone) {
+    if (userByPhone) {
       throw new BadRequestException(phoneIsUnique)
     }
 
@@ -336,7 +336,7 @@ export class AuthService {
     }
   }
 
-  async findUserById(id: string): Promise<{ user: User }> {
+  async findUserById(id: string): Promise<User> {
     const user = await this.prismaService.user.findUnique({
       where: {
         id: id
@@ -344,17 +344,13 @@ export class AuthService {
     })
 
     if (user) {
-      return {
-        user: user
-      }
+      return user
     } else {
-      return {
-        user: undefined
-      }
+      return undefined
     }
   }
 
-  async findUserByPhone(phone: string): Promise<{ user: User }> {
+  async findUserByPhone(phone: string): Promise<User> {
     const user = await this.prismaService.user.findUnique({
       where: {
         phone: phone
@@ -362,13 +358,9 @@ export class AuthService {
     })
 
     if (user) {
-      return {
-        user: user
-      }
+      return user
     } else {
-      return {
-        user: undefined
-      }
+      return undefined
     }
   }
 
