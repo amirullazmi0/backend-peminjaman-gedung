@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseFilePipeBuilder, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, ParseFilePipeBuilder, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Auth, AuthUser } from 'src/common/auth.decorator';
 import { RolesGuard } from 'src/common/roles.guard';
 import { BuildingService } from './building.service';
@@ -11,9 +11,21 @@ export class BuildingController {
   constructor(
     private buildingService: BuildingService
   ) { }
-  @Get(':id')
-  async getAll(@Param('id') id?: string) {
-    return this.buildingService.getAll(id);
+  @Get()
+  async getAll(
+    @Query('id') id?: string
+  ) {
+    return this.buildingService.getAll(id); // tanpa ID
+  }
+
+  @Get('/admin')
+  @Auth(['ADMIN'])
+  @UseGuards(RolesGuard)
+  async getAllByUser(
+    @AuthUser() user: User,
+    @Query('id') id?: string
+  ) {
+    return this.buildingService.getAllByUser(user, id);
   }
 
   @Post()
@@ -23,6 +35,7 @@ export class BuildingController {
     @AuthUser() user: User,
     @Body() body?: AddItemBuildingRequestDto
   ) {
+    console.log('body cpost', body);
     return this.buildingService.create(user, body);
   }
 
