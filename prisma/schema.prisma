@@ -35,7 +35,7 @@ model User {
   userPhoto     UserPhoto[]
   userAddress   UserAddress[]
   rentBuilding  RentBuilding[]
-  Building      Building[]
+  building      Building[]
 
   @@map("users")
 }
@@ -93,7 +93,7 @@ model Building {
   buildingPhoto              BuildingPhoto[]
   buildingAddress            BuildingAddress[]
   rentBuilding               RentBuilding[]
-  SupportDocumentRequirement SupportDocumentRequirement[]
+  supportDocumentRequirement SupportDocumentRequirement[]
 
   @@map("buildings")
 }
@@ -117,6 +117,7 @@ model SupportDocumentRequirement {
 
 model SupportDocumentRentBuilding {
   id                           String                     @id @default(uuid())
+  rentBuildingId               String
   documentUrl                  String
   supportDocumentRequirementId String                     @unique
   createdAt                    DateTime                   @default(now())
@@ -126,6 +127,7 @@ model SupportDocumentRentBuilding {
   deletedBy                    String?
   deletedAt                    DateTime?
   supportDocumentRequirement   SupportDocumentRequirement @relation(fields: [supportDocumentRequirementId], references: [id], onDelete: Cascade)
+  rentBuilding                 RentBuilding               @relation(fields: [rentBuildingId], references: [id], onDelete: Cascade)
 
   @@map("support_documents_rent_buildings")
 }
@@ -170,27 +172,29 @@ model BuildingAddress {
 }
 
 model RentBuilding {
-  id         String     @id @default(uuid())
-  userId     String
-  buildingId String
-  startDate  DateTime
-  endDate    DateTime
-  status     RentStatus
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  createdBy  String?
-  updatedBy  String?
-  deletedBy  String?
-  deletedAt  DateTime?
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  building   Building   @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  invoice    invoice[]
+  id                          String                        @id @default(uuid())
+  userId                      String
+  buildingId                  String
+  startDate                   DateTime
+  endDate                     DateTime
+  status                      RentStatus
+  createdAt                   DateTime                      @default(now())
+  updatedAt                   DateTime                      @updatedAt
+  createdBy                   String?
+  updatedBy                   String?
+  deletedBy                   String?
+  deletedAt                   DateTime?
+  user                        User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  building                    Building                      @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  invoice                     Invoice[]
+  supportDocumentRentBuilding SupportDocumentRentBuilding[]
 
   @@map("rent_buildings")
 }
 
-model invoice {
+model Invoice {
   id        String       @id @default(uuid())
+  customId  String
   rentId    String
   url       String
   createdAt DateTime     @default(now())
@@ -200,6 +204,8 @@ model invoice {
   deletedBy String?
   deletedAt DateTime?
   rent      RentBuilding @relation(fields: [rentId], references: [id], onDelete: Cascade)
+
+  @@map("invoices")
 }
 
 enum Role {
