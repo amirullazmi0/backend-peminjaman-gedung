@@ -14,6 +14,10 @@ export class CreateRentBuildingRequestDto {
   buildingId: string;
 
   @IsNotEmpty()
+  @IsString()
+  eventName: string;
+
+  @IsNotEmpty()
   @IsDateString()
   startDate: string;
 
