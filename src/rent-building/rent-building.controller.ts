@@ -20,6 +20,13 @@ export class RentBuildingController {
     return this.rentBuildingService.getAll(id);
   }
 
+  @Get('/building')
+  async getAllByBuilding(
+    @Query('buildingId') buildingId?: string
+  ) {
+    return this.rentBuildingService.getByBuilding(buildingId);
+  }
+
   @Post()
   @Auth(['USER'])
   @UseGuards(RolesGuard)
