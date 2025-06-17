@@ -1,6 +1,7 @@
 import { IsDateString, IsNotEmpty, IsNumber, IsString } from "class-validator"
 
 export class CreateInvoiceDto {
+
   @IsString()
   @IsNotEmpty()
   buidingName: string
