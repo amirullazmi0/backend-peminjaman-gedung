@@ -44,7 +44,7 @@ export class InvoiceService {
     const customId = `INV-${dateStr}-${nextNumber}`;
 
     // Generate PDF
-    const pdfBuffer = await generateInvoicePdf(req);
+    const pdfBuffer = await generateInvoicePdf(req, customId);
 
     // Convert Buffer to fake Express.Multer.File for ImageKit
     const file: Express.Multer.File = {
@@ -63,9 +63,8 @@ export class InvoiceService {
     // Upload to ImageKit
     const uploaded = await this.attachmentService.saveDocumentImageKit({
       file,
-      folder: `/invoice}`,
+      folder: `/invoice`,
     });
-
 
     return {
       success: true,
