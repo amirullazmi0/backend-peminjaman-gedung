@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateRentBuildingRequestDto, DeleteRentBuildingRequestDto, UpdateRentBuildingRequestDto } from './rent-building.dto';
 import { InvoiceService } from 'src/invoice/invoice.service';
 import { AttachmentService } from 'src/attachment/attachment.service';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class RentBuildingService {
@@ -20,7 +21,16 @@ export class RentBuildingService {
     rentBuilding = await this.prismaService.rentBuilding.findMany({
       include: {
         _count: true,
-        invoice: true
+        invoice: true,
+        supportDocumentRentBuilding: {
+          include: {
+            supportDocumentRequirement: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
       },
       where: {
         deletedAt: null
@@ -38,7 +48,16 @@ export class RentBuildingService {
         },
         include: {
           _count: true,
-          invoice: true
+          invoice: true,
+          supportDocumentRentBuilding: {
+            include: {
+              supportDocumentRequirement: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          },
         }
       })
     }
@@ -63,7 +82,16 @@ export class RentBuildingService {
             name: true
           },
         },
-        invoice: true
+        invoice: true,
+        supportDocumentRentBuilding: {
+          include: {
+            supportDocumentRequirement: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
       },
       orderBy: {
         createdAt: 'desc'
@@ -86,6 +114,15 @@ export class RentBuildingService {
             buildingPhoto: true,
             name: true
           },
+        },
+        supportDocumentRentBuilding: {
+          include: {
+            supportDocumentRequirement: {
+              select: {
+                name: true
+              }
+            }
+          }
         },
         invoice: true
       },
@@ -177,32 +214,35 @@ export class RentBuildingService {
       }
     })
 
-    // if (body.status === 'SUCCESS') {
-    //   const address = `${rent.building.buildingAddress[0].jalan}, RT ${rent.building.buildingAddress[0].rt}, RW ${rent.building.buildingAddress[0].rw},${rent.building.buildingAddress[0].kelurahan}, ${rent.building.buildingAddress[0].kecamatan}, ${rent.building.buildingAddress[0].kota}, ${rent.building.buildingAddress[0].provinsi} ${rent.building.buildingAddress[0].kodepos}`
+    if (body.status === 'SUCCESS') {
+      const address = `${rent.building.buildingAddress[0].jalan}, RT ${rent.building.buildingAddress[0].rt}, RW ${rent.building.buildingAddress[0].rw},${rent.building.buildingAddress[0].kelurahan}, ${rent.building.buildingAddress[0].kecamatan}, ${rent.building.buildingAddress[0].kota}, ${rent.building.buildingAddress[0].provinsi} ${rent.building.buildingAddress[0].kodepos}`
 
-    //   const generateInvoice = await this.invoiceService.generateInvoice({
-    //     buidingName: rent.building.name,
-    //     buildingAddress: address,
-    //     buildingUserEmail: rent.building.user.email,
-    //     buildingUserName: rent.building.user.email,
-    //     buildingUserPhone: rent.building.user.phone,
-    //     userName: rent.user.name,
-    //     userEmail: rent.user.email,
-    //     userPhone: rent.user.phone,
-    //     price: rent.building.price,
-    //     startDate: rent.startDate,
-    //     endDate: rent.endDate
-    //   })
+      const totalDays = dayjs(rent.endDate).diff(dayjs(rent.startDate), 'day') + 1;
+      const totalPrice = rent.building.price * totalDays;
 
-    //   await this.prismaService.invoice.create({
-    //     data: {
-    //       rentId: rent.id,
-    //       customId: generateInvoice.data.customId,
-    //       url: generateInvoice.data.invoiceUrl,
-    //       createdBy: user.id
-    //     }
-    //   })
-    // }
+      const generateInvoice = await this.invoiceService.generateInvoice({
+        buidingName: rent.building.name,
+        buildingAddress: address,
+        buildingUserEmail: rent.building.user.email,
+        buildingUserName: rent.building.user.name,
+        buildingUserPhone: rent.building.user.phone,
+        userName: rent.user.name,
+        userEmail: rent.user.email,
+        userPhone: rent.user.phone,
+        price: totalPrice,
+        startDate: rent.startDate,
+        endDate: rent.endDate,
+      });
+
+      await this.prismaService.invoice.create({
+        data: {
+          rentId: rent.id,
+          customId: generateInvoice.data.customId,
+          url: generateInvoice.data.invoiceUrl,
+          createdBy: user.id
+        }
+      })
+    }
 
     return {
       success: true,
