@@ -1,7 +1,6 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString, IsArray, ValidateNested, IsLatitude, IsLongitude, IsUrl } from "class-validator";
 import { Type } from 'class-transformer';
 
-
 class AddressDto {
   @IsNotEmpty()
   @IsString()
@@ -47,6 +46,7 @@ class PhotoDto {
   url: string;
 }
 
+// Use this class only once for both creation and update scenarios
 class SupportDocumentRequirementDto {
   @IsNotEmpty()
   @IsString()
@@ -102,71 +102,46 @@ export class updateBuildingRequestDto {
   @IsNumber()
   price: number;
 
+  @IsOptional() // Made description optional for updates
   @IsString()
   description: string;
+
+  @ValidateNested()
+  @Type(() => AddressDto)
+  address: AddressDto;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => updateBuildingPhotoRequestDto)
+  photo: updateBuildingPhotoRequestDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => updateSupportDocumentRequirementDto)
+  supportDocumentRequirement: updateSupportDocumentRequirementDto[];
 }
 
 export class updateBuildingPhotoRequestDto {
-  @IsNotEmpty()
-  @IsString()
-  buildingId: string;
-
-  @IsArray()
-  @IsString({ each: true })
-  url: string[];
-}
-
-export class updateBuildingAddressRequestDto {
-  @IsNotEmpty()
-  @IsString()
-  id: string;
-
-  @IsString()
-  jalan: string;
-
-  @IsString()
-  rt: string;
-
-  @IsString()
-  rw: string;
-
-  @IsString()
-  kelurahan: string;
-
-  @IsString()
-  kecamatan: string;
-
-  @IsString()
-  kota: string;
-
-  @IsString()
-  provinsi: string;
-
-  @IsString()
-  kodepos: string;
-
-  @IsLatitude()
-  lat: string;
-
-  @IsLongitude()
-  lng: string;
-}
-
-export class updateSupportDocumentRequirement {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   id: string;
 
   @IsNotEmpty()
   @IsString()
-  buildingId: string;
+  url: string;
+}
+
+
+class updateSupportDocumentRequirementDto {
+  @IsOptional()
+  @IsString()
+  id: string;
 
   @IsNotEmpty()
   @IsString()
   name: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsUrl()
   templateDocumentUrl?: string;
 }
-
