@@ -68,6 +68,43 @@ export class RentBuildingService {
     }
   }
 
+  async getByBuilding(buildingId: string): Promise<WebResponse<RentBuilding[]>> {
+    const rentBuilding = await this.prismaService.rentBuilding.findMany({
+      where: {
+        buildingId: buildingId,
+        deletedAt: null
+      },
+      include: {
+        _count: true,
+        invoice: true,
+        supportDocumentRentBuilding: {
+          include: {
+            supportDocumentRequirement: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
+        user: {
+          select: {
+            name: true,
+            email: true,
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    return {
+      success: true,
+      message: getDataSuccess,
+      data: rentBuilding
+    }
+  }
+
   async getAllByUser(user: User): Promise<WebResponse<RentBuilding | RentBuilding[]>> {
     let rentBuilding: RentBuilding | RentBuilding[] = await this.prismaService.rentBuilding.findMany({
       where: {
@@ -153,6 +190,7 @@ export class RentBuildingService {
     const rent = await this.prismaService.rentBuilding.create({
       data: {
         userId: user.id,
+        eventName: body.eventName,
         buildingId: body.buildingId,
         startDate: body.startDate,
         endDate: body.endDate,
