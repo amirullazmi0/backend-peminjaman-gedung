@@ -27,6 +27,14 @@ export class BuildingService {
           buildingPhoto: true,
           buildingAddress: true,
           supportDocumentRequirement: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              phone: true,
+              name: true,
+            }
+          }
         },
       });
 
@@ -48,6 +56,14 @@ export class BuildingService {
           buildingPhoto: true,
           buildingAddress: true,
           supportDocumentRequirement: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              phone: true,
+              name: true,
+            }
+          }
         },
         orderBy: {
           createdAt: 'desc',
