@@ -5,17 +5,81 @@
     <title>Invoice Peminjaman Gedung</title>
     <style>
       body {
-        font-family: Arial;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         margin: 40px;
+        background-color: #f4f6f8;
+        color: #333;
       }
+
       h1 {
         text-align: center;
+        color: #1a237e;
+        margin-bottom: 40px;
+        font-size: 24px;
+        text-transform: uppercase;
       }
+
       .section {
-        margin-bottom: 20px;
+        background: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
       }
+
       .label {
+        font-weight: 600;
+        display: inline-block;
+        min-width: 160px;
+        color: #444;
+      }
+
+      .section h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #1a237e;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 50px;
+        font-style: italic;
+        font-size: 14px;
+        color: #777;
+      }
+
+      .info-row {
+        margin-bottom: 8px;
+        font-size: 15px;
+      }
+
+      .signature-section {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 60px;
+        padding: 0 20px;
+      }
+
+      .signature-box {
+        text-align: center;
+        width: 45%;
+      }
+
+      .signature-line {
+        margin-top: 60px;
+        border-top: 1px solid #444;
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .signature-label {
+        margin-top: 8px;
         font-weight: bold;
+        font-size: 14px;
       }
     </style>
   </head>
@@ -23,17 +87,20 @@
     <h1>Invoice Peminjaman Gedung</h1>
 
     <div class="section">
-      <div>
+      <div class="info-row">
+        <span class="label">Custom ID:</span> <%= customId %>
+      </div>
+      <div class="info-row">
         <span class="label">Nama Gedung:</span> <%= invoice.buidingName %>
       </div>
-      <div>
+      <div class="info-row">
         <span class="label">Alamat Gedung:</span> <%= invoice.buildingAddress %>
       </div>
-      <div>
+      <div class="info-row">
         <span class="label">Harga:</span> Rp <%=
         invoice.price.toLocaleString("id-ID") %>
       </div>
-      <div>
+      <div class="info-row">
         <span class="label">Periode:</span> <%= invoice.startDate %> s/d <%=
         invoice.endDate %>
       </div>
@@ -41,26 +108,43 @@
 
     <div class="section">
       <h3>Penyedia Gedung</h3>
-      <div>
+      <div class="info-row">
         <span class="label">Nama:</span> <%= invoice.buildingUserName %>
       </div>
-      <div>
+      <div class="info-row">
         <span class="label">Email:</span> <%= invoice.buildingUserEmail %>
       </div>
-      <div>
+      <div class="info-row">
         <span class="label">Telepon:</span> <%= invoice.buildingUserPhone %>
       </div>
     </div>
 
     <div class="section">
       <h3>Penyewa Gedung</h3>
-      <div><span class="label">Nama:</span> <%= invoice.userName %></div>
-      <div><span class="label">Email:</span> <%= invoice.userEmail %></div>
-      <div><span class="label">Telepon:</span> <%= invoice.userPhone %></div>
+      <div class="info-row">
+        <span class="label">Nama:</span> <%= invoice.userName %>
+      </div>
+      <div class="info-row">
+        <span class="label">Email:</span> <%= invoice.userEmail %>
+      </div>
+      <div class="info-row">
+        <span class="label">Telepon:</span> <%= invoice.userPhone %>
+      </div>
     </div>
 
-    <footer style="margin-top: 50px; text-align: center">
-      <p>Terima kasih atas peminjaman gedung ini.</p>
-    </footer>
+    <div class="signature-section">
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <div class="signature-label">Penyedia Gedung</div>
+      </div>
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <div class="signature-label">Penyewa Gedung</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Terima kasih atas kepercayaan Anda dalam menggunakan layanan kami.</p>
+    </div>
   </body>
 </html>
