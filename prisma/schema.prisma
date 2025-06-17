@@ -173,6 +173,7 @@ model BuildingAddress {
 
 model RentBuilding {
   id                          String                        @id @default(uuid())
+  eventName                   String?
   userId                      String
   buildingId                  String
   startDate                   DateTime
