@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Building, User } from 'generated/prisma';
 import { WebResponse } from 'src/DTO/globalsResponse';
 import { dataNotFound, deleteDataSuccess, getDataSuccess, updateDataSuccess } from 'src/DTO/messages';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AddItemBuildingRequestDto, deleteBuildingRequestDto, updateBuildingAddressRequestDto, updateBuildingPhotoRequestDto, updateBuildingRequestDto, updateSupportDocumentRequirement } from './buildingDto';
+import { AddItemBuildingRequestDto, deleteBuildingRequestDto, updateBuildingRequestDto } from './buildingDto';
 import { AttachmentService } from 'src/attachment/attachment.service';
 
 @Injectable()
@@ -24,9 +24,17 @@ export class BuildingService {
           deletedAt: null, // Make sure we exclude soft-deleted buildings
         },
         include: {
-          buildingPhoto: true,
+          buildingPhoto: {
+            where: {
+              deletedAt: null
+            }
+          },
           buildingAddress: true,
-          supportDocumentRequirement: true,
+          supportDocumentRequirement: {
+            where: {
+              deletedAt: null
+            }
+          },
           user: {
             select: {
               id: true,
@@ -53,9 +61,17 @@ export class BuildingService {
           deletedAt: null, // Only active buildings (not soft-deleted)
         },
         include: {
-          buildingPhoto: true,
+          buildingPhoto: {
+            where: {
+              deletedAt: null
+            }
+          },
           buildingAddress: true,
-          supportDocumentRequirement: true,
+          supportDocumentRequirement: {
+            where: {
+              deletedAt: null
+            }
+          },
           user: {
             select: {
               id: true,
@@ -90,9 +106,17 @@ export class BuildingService {
           userId: user.id
         },
         include: {
-          buildingPhoto: true,
+          buildingPhoto: {
+            where: {
+              deletedAt: null
+            }
+          },
           buildingAddress: true,
-          supportDocumentRequirement: true,
+          supportDocumentRequirement: {
+            where: {
+              deletedAt: null
+            }
+          },
         },
       });
 
@@ -112,9 +136,17 @@ export class BuildingService {
           userId: user.id
         },
         include: {
-          buildingPhoto: true,
+          buildingPhoto: {
+            where: {
+              deletedAt: null
+            }
+          },
           buildingAddress: true,
-          supportDocumentRequirement: true,
+          supportDocumentRequirement: {
+            where: {
+              deletedAt: null
+            }
+          },
         },
         orderBy: {
           createdAt: 'desc',
@@ -218,192 +250,159 @@ export class BuildingService {
     }
   }
 
-  async updateBuilding(user: User, body: updateBuildingRequestDto): Promise<WebResponse<Building>> {
+  async update(user: User, body: updateBuildingRequestDto): Promise<WebResponse<Building>> {
+    const photos = body.photo;
+    const documents = body.supportDocumentRequirement;
 
-    const building = await this.prismaService.building.findUnique({
+    let building = await this.prismaService.building.findUnique({
       where: {
         id: body.id,
-        deletedAt: null
-      }
-    })
-
-    if (building) {
-      await this.prismaService.building.update({
-        where: {
-          id: body.id,
-        },
-        data: {
-          name: body.name,
-          price: body.price,
-          description: body.description,
-          updatedBy: user.id
-        }
-      })
-      return {
-        success: true,
-        message: updateDataSuccess,
-      }
-    } else {
-      return {
-        success: false,
-        message: dataNotFound,
-      }
-    }
-
-  }
-
-  async updateBuildingPhoto(user: User, body: updateBuildingPhotoRequestDto): Promise<WebResponse<Building>> {
-    const building = await this.prismaService.building.findUnique({
-      where: {
-        id: body.buildingId,
-        deletedAt: null
-      }
-    });
-
-    if (!building) {
-      return {
-        success: false,
-        message: dataNotFound,
-      };
-    }
-
-    const existingPhotos = await this.prismaService.buildingPhoto.findMany({
-      where: {
-        buildingId: building.id,
-        deletedAt: null
-      }
-    });
-
-    const existingUrls = existingPhotos.map(p => p.url);
-    const newUrls = body.url;
-
-    const toDelete = existingPhotos.filter(photo => !newUrls.includes(photo.url));
-    const deleteOps = toDelete.map(photo =>
-      this.prismaService.buildingPhoto.update({
-        where: { id: photo.id },
-        data: {
-          deletedAt: new Date(),
-          deletedBy: user.id,
-        }
-      })
-    );
-
-    const toCreate = newUrls.filter(url => !existingUrls.includes(url));
-    const createOps = toCreate.map(url =>
-      this.prismaService.buildingPhoto.create({
-        data: {
-          url,
-          buildingId: building.id
-        }
-      })
-    );
-
-    await Promise.all([...deleteOps, ...createOps]);
-
-    return {
-      success: true,
-      message: updateDataSuccess,
-    };
-  }
-
-
-  async updateBuildingAddress(user: User, body: updateBuildingAddressRequestDto): Promise<WebResponse<Building>> {
-    const building = await this.prismaService.building.findUnique({
-      where: {
-        id: body.id,
-        deletedAt: null
+        deletedAt: null,
       },
-      include: {
-        buildingAddress: true
-      }
-    })
-
-    const address = await this.prismaService.buildingAddress.findUnique({
-      where: {
-        buildingId: building.id,
-        deletedAt: null
-      }
-    })
-
-    if (building) {
-      await this.prismaService.buildingAddress.update({
-        where: {
-          buildingId: building.id,
-        },
-        data: {
-          lat: body.lat ?? address.lat,
-          lng: body.lng ?? address.lng,
-          jalan: body.jalan ?? address.jalan,
-          kelurahan: body.kelurahan ?? address.kelurahan,
-          kecamatan: body.kecamatan ?? address.kecamatan,
-          kota: body.kota ?? address.kota,
-          provinsi: body.provinsi ?? address.provinsi,
-          kodepos: body.kodepos ?? address.kodepos,
-          rt: body.rt ?? address.rt,
-          rw: body.rw ?? address.rw,
-          updatedBy: user.id
-        }
-      })
-      return {
-        success: true,
-        message: updateDataSuccess,
-      }
-    } else {
-      return {
-        success: false,
-        message: dataNotFound,
-      }
-    }
-  }
-
-  async updateSupportDocumentRequirement(
-    user: User,
-    body: updateSupportDocumentRequirement
-  ): Promise<WebResponse<Building>> {
-    const building = await this.prismaService.building.findUnique({
-      where: {
-        id: body.buildingId,
-        deletedAt: null
-      }
     });
 
     if (!building) {
-      return {
-        success: false,
-        message: dataNotFound,
-      };
-    }
-    const isDuplicate = await this.prismaService.supportDocumentRequirement.findFirst({
-      where: {
-        buildingId: body.buildingId,
-        name: body.name,
-        id: { not: body.id },
-        deletedAt: null
-      }
-    });
-
-    if (isDuplicate) {
-      return {
-        success: false,
-        message: `Nama dokumen "${body.name}" sudah digunakan di gedung ini.`,
-      };
+      throw new BadRequestException(dataNotFound);
     }
 
-    await this.prismaService.supportDocumentRequirement.update({
+    // Update building
+    building = await this.prismaService.building.update({
       where: {
         id: body.id,
       },
       data: {
         name: body.name,
-        templateDocumentUrl: body.templateDocumentUrl,
-        updatedBy: user.id
-      }
+        price: body.price,
+        description: body.description,
+        updatedBy: user.id,
+      },
     });
+
+    // Update building address
+    await this.prismaService.buildingAddress.update({
+      where: {
+        buildingId: body.id,
+      },
+      data: {
+        lat: body.address.lat,
+        lng: body.address.lng,
+        jalan: body.address.jalan,
+        kelurahan: body.address.kelurahan,
+        kecamatan: body.address.kecamatan,
+        kota: body.address.kota,
+        provinsi: body.address.provinsi,
+        kodepos: body.address.kodepos,
+        rt: body.address.rt,
+        rw: body.address.rw,
+        updatedBy: user.id,
+      },
+    });
+
+    if (photos && photos.length > 0) {
+      const photoBefore = await this.prismaService.buildingPhoto.findMany({
+        where: {
+          buildingId: building.id,
+        },
+      });
+
+      const currentPhotoIds = photos.map(photo => photo.id);
+      const photosToDelete = photoBefore.filter(photo => !currentPhotoIds.includes(photo.id));
+
+
+      await this.prismaService.buildingPhoto.updateMany({
+        where: {
+          buildingId: building.id,
+          id: { in: photosToDelete.map(photo => photo.id) },
+        },
+        data: {
+          deletedAt: new Date(),
+          deletedBy: user.id
+        },
+      });
+
+      // Update or create new photos
+      await Promise.all(
+        photos.map(async (ss) => {
+          if (ss.id) {
+            await this.prismaService.buildingPhoto.update({
+              where: {
+                id: ss.id,
+              },
+              data: {
+                url: ss.url,
+                updatedBy: user.id,
+              },
+            });
+          } else {
+            await this.prismaService.buildingPhoto.create({
+              data: {
+                url: ss.url,
+                buildingId: building.id,
+                createdBy: user.id,
+              },
+            });
+          }
+        })
+      );
+    }
+
+    // Soft delete missing documents
+    if (documents && documents.length > 0) {
+      const documentBefore = await this.prismaService.supportDocumentRequirement.findMany({
+        where: {
+          buildingId: building.id,
+        },
+      });
+
+      const currentDocumentIds = documents.map(doc => doc.id);
+      const documentsToDelete = documentBefore.filter(doc => !currentDocumentIds.includes(doc.id));
+
+      // Soft delete documents that are not in the new list
+      await this.prismaService.supportDocumentRequirement.updateMany({
+        where: {
+          buildingId: building.id,
+          id: { in: documentsToDelete.map(doc => doc.id) },
+        },
+        data: {
+          deletedAt: new Date(), // Soft delete
+          deletedBy: user.id,
+        },
+      });
+
+      // Update or create new documents
+      await Promise.all(
+        documents.map(async (ss) => {
+          if (ss.id) {
+            await this.prismaService.supportDocumentRequirement.update({
+              where: {
+                id: ss.id,
+              },
+              data: {
+                name: ss.name,
+                templateDocumentUrl: ss.templateDocumentUrl,
+                updatedBy: user.id,
+              },
+            });
+          } else {
+            await this.prismaService.supportDocumentRequirement.create({
+              data: {
+                name: ss.name,
+                templateDocumentUrl: ss.templateDocumentUrl,
+                buildingId: building.id,
+                createdBy: user.id,
+              },
+            });
+          }
+        })
+      );
+    }
+
     return {
       success: true,
       message: updateDataSuccess,
     };
   }
+
 
 
   async saveBuildingImage({
