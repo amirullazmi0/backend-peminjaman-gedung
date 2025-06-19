@@ -32,8 +32,8 @@ model User {
   deletedAt     DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  userPhoto     UserPhoto[]
-  userAddress   UserAddress[]
+  userPhoto     UserPhoto?
+  userAddress   UserAddress?
   rentBuilding  RentBuilding[]
   building      Building[]
 
@@ -41,7 +41,6 @@ model User {
 }
 
 model UserPhoto {
-  id        String    @id @default(uuid())
   userId    String
   url       String
   createdAt DateTime  @default(now())
@@ -52,6 +51,7 @@ model UserPhoto {
   deletedAt DateTime?
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId])
   @@map("user_photos")
 }
 
@@ -62,7 +62,7 @@ model UserAddress {
   rw        String?
   kelurahan String?
   kecamatan String?
-  kabupaten String?
+  kota      String?
   provinsi  String?
   kodepos   String?
   createdAt DateTime  @default(now())
